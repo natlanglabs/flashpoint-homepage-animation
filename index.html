@@ -1,9 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta http-equiv="refresh" content="0; url=animation.html" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashpoint</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- External stylesheet -->
+    <link rel="stylesheet" href="styles.css" />
   </head>
+
   <body>
-    <p>Redirecting to <a href="animation.html">animation.html</a>...</p>
+    
+    <!-- Background layers -->
+    <div class="blur-target">
+      <div class="vignette-overlay"></div>
+
+      <div class="container">
+        <canvas id="shaderCanvas"></canvas>
+
+        <div class="circle-wrapper">
+          <div class="glow-layer"></div>
+          <div class="white-ring"></div>
+          <div class="center-orb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search box -->
+    <div class="search-container">
+      <div class="search-box">
+        <div class="search-row">
+          <svg
+            class="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="What do you want to ask your market?"
+          />
+        </div>
+
+        <div class="action-row">
+          <div class="left-action">
+            <button class="action-button">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
+                ></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="right-actions">
+            <button class="action-button">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
+                ></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+
+            <button class="submit-button">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time control overlay -->
+    <div class="time-control-overlay">
+      <div class="gradient-preview" id="gradientPreview"></div>
+
+      <div class="time-control-row">
+        <span class="time-control-label">Hour:</span>
+        <input
+          type="range"
+          class="time-slider"
+          id="hourSlider"
+          min="0"
+          max="23"
+          value="12"
+          step="0.1"
+        />
+        <span class="time-value" id="timeValue">12:00</span>
+      </div>
+
+      <div class="control-buttons">
+        <button class="control-button" id="toggleAuto">Auto Mode</button>
+        <button class="control-button active" id="toggleManual">
+          Manual Mode
+        </button>
+        <button class="control-button" id="useRealTime">Use Real Time</button>
+      </div>
+    </div>
+
+    <!-- External JavaScript -->
+    <script src="script.js"></script>
   </body>
 </html>
