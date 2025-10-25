@@ -20,6 +20,9 @@
     globeMaterial.transparent = true;
     globeMaterial.opacity = 0;
 
+    const EARTH_TILT_RAD = (23.5 * Math.PI) / 180;
+    globe.scene().rotation.z = -EARTH_TILT_RAD;
+
     const controls = globe.controls();
     controls.enableZoom = false;
     controls.enablePan = false;
