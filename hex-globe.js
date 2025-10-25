@@ -56,7 +56,8 @@
       .atmosphereAltitude(0.22)
       .hexPolygonResolution(3)
       .hexPolygonMargin(0.24)
-      .hexPolygonUseDots(true)
+      .hexPolygonUseDots(false)
+      .hexPolygonAltitude(() => 0.01)
       .hexPolygonColor(() => "#5b7cff");
 
     const globeMaterial = globe.globeMaterial();
