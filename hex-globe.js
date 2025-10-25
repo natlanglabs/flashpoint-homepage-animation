@@ -1,8 +1,6 @@
 (() => {
   const DATASET_URL =
     "https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson";
-  const EARTH_TEXTURE =
-    "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg";
 
   const initGlobe = () => {
     const container = document.getElementById("globeOverlay");
@@ -10,7 +8,6 @@
 
     const globe = Globe({ animateIn: false })(container)
       .backgroundColor("rgba(0,0,0,0)")
-      .globeImageUrl(EARTH_TEXTURE)
       .showAtmosphere(true)
       .atmosphereColor("#a5d3ff")
       .atmosphereAltitude(0.22)
@@ -18,6 +15,10 @@
       .hexPolygonMargin(0.24)
       .hexPolygonUseDots(true)
       .hexPolygonColor(() => "#5b7cff");
+
+    const globeMaterial = globe.globeMaterial();
+    globeMaterial.transparent = true;
+    globeMaterial.opacity = 0;
 
     const controls = globe.controls();
     controls.enableZoom = false;
