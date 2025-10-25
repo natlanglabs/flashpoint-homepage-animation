@@ -102,7 +102,7 @@
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.45;
+    controls.autoRotateSpeed = 0.08;
 
     const resize = () => {
       const { width, height } = container.getBoundingClientRect();
