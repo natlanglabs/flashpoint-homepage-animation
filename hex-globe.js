@@ -18,7 +18,10 @@
 
     const globeMaterial = globe.globeMaterial();
     globeMaterial.transparent = true;
-    globeMaterial.opacity = 0;
+    globeMaterial.opacity = 0.82;
+    globeMaterial.color.set("#d9e8ff");
+    globeMaterial.emissive.set("#a7c8ff");
+    globeMaterial.emissiveIntensity = 0.12;
 
     const EARTH_TILT_RAD = (23.5 * Math.PI) / 180;
     globe.scene().rotation.z = -EARTH_TILT_RAD;
