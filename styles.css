@@ -178,6 +178,28 @@ body {
   animation: orbFloat 6s ease-in-out infinite, orbPulse 4s ease-in-out infinite;
 }
 
+.hex-globe-overlay {
+  position: absolute;
+  width: 52%;
+  top: 24%;
+  left: 24%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 8px 18px rgba(15, 35, 75, 0.22));
+  z-index: 3;
+}
+
+.hex-globe-overlay canvas {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50%;
+  pointer-events: none !important;
+  background: transparent;
+}
+
 /* -------------------------------------------------
    SEARCH BOX
 ------------------------------------------------- */
