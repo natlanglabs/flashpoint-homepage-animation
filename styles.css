@@ -180,10 +180,10 @@ body {
 
 .hex-globe-overlay {
   position: absolute;
-  width: 91%;
-  height: 91%;
-  top: 4.5%;
-  left: 4.5%;
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
   border-radius: 50%;
   overflow: hidden;
   pointer-events: none;
