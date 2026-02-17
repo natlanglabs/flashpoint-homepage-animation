@@ -1,0 +1,136 @@
+# BugBot Auto-Fix Workflow
+# This workflow is installed by BugBot into target repos.
+# When BugBot creates a GitHub issue, it adds the "bugbot:autofix" label,
+# which triggers this workflow to run Claude Code and open a fix PR.
+#
+# Can also be triggered manually via workflow_dispatch to re-process
+# an issue (e.g. after the workflow is first installed in a repo).
+#
+# Required secrets:
+#   ANTHROPIC_API_KEY  - Anthropic API key for Claude Code
+#   SLACK_BOT_TOKEN    - (optional) Slack bot token for posting PR links back to Slack
+
+name: BugBot Auto-Fix
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to auto-fix (for re-triggering after workflow installation)"
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  autofix:
+    if: |
+      (github.event_name == 'issues' && github.event.label.name == 'bugbot:autofix') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_NUMBER: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.issue_number || github.event.issue.number }}
+    steps:
+      - name: Fetch issue details (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_JSON=$(gh api "repos/${{ github.repository }}/issues/${{ env.ISSUE_NUMBER }}")
+          echo "issue_body<<GHEOF" >> "$GITHUB_OUTPUT"
+          echo "$ISSUE_JSON" | jq -r '.body // ""' >> "$GITHUB_OUTPUT"
+          echo "GHEOF" >> "$GITHUB_OUTPUT"
+          echo "issue_title=$(echo "$ISSUE_JSON" | jq -r '.title // ""')" >> "$GITHUB_OUTPUT"
+          echo "issue_url=$(echo "$ISSUE_JSON" | jq -r '.html_url // ""')" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          label_trigger: "bugbot:autofix"
+          issue_number: ${{ env.ISSUE_NUMBER }}
+          prompt: |
+            You are BugBot's auto-fix agent. A bug has been reported, diagnosed, and
+            an issue has been created. Your job is to implement the fix.
+
+            Read the issue body carefully. It contains:
+            - A description of the bug and how to reproduce it
+            - An AI-generated diagnosis with root cause analysis
+            - A proposed fix outline
+            - A "Claude Code Prompt" section with specific implementation instructions
+
+            Instructions:
+            1. Start with the "Claude Code Prompt" section if present — it has targeted
+               instructions written by BugBot's code analyst who already investigated the codebase.
+            2. If there's no Claude Code Prompt, use the diagnosis and proposed fix to guide your work.
+            3. Implement the minimal fix needed. Don't refactor unrelated code.
+            4. Run existing tests if they exist to verify your fix doesn't break anything.
+            5. If the issue is categorized as "Infrastructure / Deployment" or "Configuration",
+               focus on config files, deployment manifests, and environment setup rather than app code.
+          claude_args: |
+            --max-turns 50
+
+      - name: Add reviewers to PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Find the PR that Claude Code created for this issue
+          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" --search "head:claude/" --json number --jq '.[0].number' 2>/dev/null || true)
+
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            echo "Adding reviewers to PR #${PR_NUMBER}"
+            gh pr edit "$PR_NUMBER" --repo "${{ github.repository }}" \
+              --add-reviewer raghavaro,romitgithub || true
+
+            # Also assign them to the PR
+            gh pr edit "$PR_NUMBER" --repo "${{ github.repository }}" \
+              --add-assignee raghavaro,romitgithub || true
+          else
+            echo "No PR found to add reviewers to"
+          fi
+
+      - name: Notify Slack
+        if: always() && env.SLACK_BOT_TOKEN != ''
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          ISSUE_BODY: ${{ github.event_name == 'workflow_dispatch' && steps.fetch_issue.outputs.issue_body || github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event_name == 'workflow_dispatch' && steps.fetch_issue.outputs.issue_title || github.event.issue.title }}
+          ISSUE_URL: ${{ github.event_name == 'workflow_dispatch' && steps.fetch_issue.outputs.issue_url || github.event.issue.html_url }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          # Extract BugBot Slack metadata from issue body
+          SLACK_META=$(echo "$ISSUE_BODY" | grep -oP '<!-- bugbot:slack:\K[^}]*}' || true)
+          if [ -z "$SLACK_META" ]; then
+            echo "No Slack metadata found in issue body, skipping notification"
+            exit 0
+          fi
+
+          CHANNEL=$(echo "$SLACK_META" | python3 -c "import sys,json; print(json.load(sys.stdin)['channel'])" 2>/dev/null || true)
+          THREAD_TS=$(echo "{$SLACK_META" | python3 -c "import sys,json; print(json.load(sys.stdin)['thread_ts'])" 2>/dev/null || true)
+
+          if [ -z "$CHANNEL" ] || [ -z "$THREAD_TS" ]; then
+            echo "Could not parse Slack channel/thread from metadata, skipping"
+            exit 0
+          fi
+
+          # Find any PR that Claude Code created for this issue
+          PR_URL=$(gh pr list --repo "${{ github.repository }}" --search "head:claude/" --json url,title --jq '.[0].url' 2>/dev/null || true)
+
+          if [ -n "$PR_URL" ]; then
+            MSG=":rocket: *Auto-fix PR created* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\n<${PR_URL}|View Pull Request>\n\nClaude Code analyzed the issue and proposed a fix. Reviewers: \`raghavaro\`, \`romitgithub\`"
+          else
+            MSG=":mag: *Auto-fix attempted* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\nClaude Code investigated the issue but may need human guidance. <${{ env.ISSUE_URL }}|Check the issue> for details."
+          fi
+
+          curl -s -X POST "https://slack.com/api/chat.postMessage" \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"channel\":\"${CHANNEL}\",\"thread_ts\":\"${THREAD_TS}\",\"text\":\"${MSG}\"}"
