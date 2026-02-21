@@ -26,6 +26,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write
 
 jobs:
   autofix:
@@ -114,7 +115,7 @@ jobs:
           fi
 
           CHANNEL=$(echo "$SLACK_META" | python3 -c "import sys,json; print(json.load(sys.stdin)['channel'])" 2>/dev/null || true)
-          THREAD_TS=$(echo "{$SLACK_META" | python3 -c "import sys,json; print(json.load(sys.stdin)['thread_ts'])" 2>/dev/null || true)
+          THREAD_TS=$(echo "$SLACK_META" | python3 -c "import sys,json; print(json.load(sys.stdin)['thread_ts'])" 2>/dev/null || true)
 
           if [ -z "$CHANNEL" ] || [ -z "$THREAD_TS" ]; then
             echo "Could not parse Slack channel/thread from metadata, skipping"
@@ -125,12 +126,21 @@ jobs:
           PR_URL=$(gh pr list --repo "${{ github.repository }}" --search "head:claude/" --json url,title --jq '.[0].url' 2>/dev/null || true)
 
           if [ -n "$PR_URL" ]; then
-            MSG=":rocket: *Auto-fix PR created* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\n<${PR_URL}|View Pull Request>\n\nClaude Code analyzed the issue and proposed a fix. Reviewers: \`raghavaro\`, \`romitgithub\`"
+            THREAD_MSG=":rocket: *Auto-fix PR created* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\n<${PR_URL}|View Pull Request>\n\nClaude Code analyzed the issue and proposed a fix. Reviewers: \`raghavaro\`, \`romitgithub\`"
+            APPROVAL_MSG=":robot_face: *BugBot auto-fix PR* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\n\n:pull_request: <${PR_URL}|View Pull Request>\n:bug: <${{ env.ISSUE_URL }}|View Original Issue>\n\n<@U03FWKLTK44> please review"
           else
-            MSG=":mag: *Auto-fix attempted* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\nClaude Code investigated the issue but may need human guidance. <${{ env.ISSUE_URL }}|Check the issue> for details."
+            THREAD_MSG=":mag: *Auto-fix attempted* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\nClaude Code investigated the issue but may need human guidance. <${{ env.ISSUE_URL }}|Check the issue> for details."
+            APPROVAL_MSG=":mag: *BugBot auto-fix attempted* for \`${REPO_NAME}#${{ env.ISSUE_NUMBER }}\`:\nClaude Code investigated but may need human guidance.\n\n:bug: <${{ env.ISSUE_URL }}|View Original Issue>"
           fi
 
+          # Notify the original Slack thread
           curl -s -X POST "https://slack.com/api/chat.postMessage" \
             -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"channel\":\"${CHANNEL}\",\"thread_ts\":\"${THREAD_TS}\",\"text\":\"${MSG}\"}"
+            -d "{\"channel\":\"${CHANNEL}\",\"thread_ts\":\"${THREAD_TS}\",\"text\":\"${THREAD_MSG}\"}"
+
+          # Post to #eng-approvals
+          curl -s -X POST "https://slack.com/api/chat.postMessage" \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"channel\":\"eng-approvals\",\"text\":\"${APPROVAL_MSG}\"}"
