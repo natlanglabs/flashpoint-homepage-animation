@@ -7,21 +7,18 @@
    TIME GRADIENT CONFIGURATION
 -------------------------------------------------- */
 const timeGradients = [
-  { hour: 0, gradient: "linear-gradient(to bottom,#001a33 0%,#002244 30%,#003355 60%,#004466 100%)" },
-  { hour: 2, gradient: "linear-gradient(to bottom,#002244 0%,#002855 30%,#003366 60%,#003d77 100%)" },
-  { hour: 4, gradient: "linear-gradient(to bottom,#1a2855 0%,#2d3366 30%,#4d4488 60%,#6d5599 100%)" },
-  { hour: 5, gradient: "linear-gradient(to bottom,#6d5599 0%,#8d66aa 30%,#aa77bb 60%,#cc88cc 100%)" },
-  { hour: 6, gradient: "linear-gradient(to bottom,#dd99bb 0%,#ee9988 30%,#ff9966 60%,#ff8855 100%)" },
-  { hour: 8, gradient: "linear-gradient(to bottom,#FF8B5A 0%,#FFA570 30%,#FFBE86 60%,#FFD79C 100%)" },
-  { hour: 10, gradient: "linear-gradient(to bottom,#FFD89A 0%,#FFE4AA 30%,#FFF0BB 60%,#FFF8CC 100%)" },
-  { hour: 12, gradient: "linear-gradient(to bottom,#FFFADD 0%,#A8D8FF 40%,#6BB8FF 70%,#4A9FEE 100%)" },
-  { hour: 14, gradient: "linear-gradient(to bottom,#FFEBB0 0%,#FFD8A0 30%,#FFC890 60%,#FFB880 100%)" },
-  { hour: 16, gradient: "linear-gradient(to bottom,#FFB880 0%,#FFA870 30%,#FF9860 60%,#FF8850 100%)" },
-  { hour: 18, gradient: "linear-gradient(to bottom,#FF7850 0%,#FF6844 30%,#FF5838 60%,#FF482C 100%)" },
-  { hour: 19, gradient: "linear-gradient(to bottom,#FF482C 0%,#DD4433 30%,#BB4444 60%,#994455 100%)" },
-  { hour: 20, gradient: "linear-gradient(to bottom,#FF5522 0%,#CC4455 30%,#883388 60%,#4433BB 100%)" },
-  { hour: 22, gradient: "linear-gradient(to bottom,#010214 0%,#011334 20%,#195AB9 80%,#FF699F 100%)" },
-  { hour: 23, gradient: "linear-gradient(to bottom,#10A184 0%,#195AB9 20%,#011334 80%,#010214 100%)" },
+  { hour: 0, gradient: "linear-gradient(to bottom,#f7f9ff 0%,#eef2ff 35%,#e0e8ff 70%,#d6e3ff 100%)" },
+  { hour: 2, gradient: "linear-gradient(to bottom,#f9f7ff 0%,#f0f2ff 30%,#e3ebff 65%,#d7e7ff 100%)" },
+  { hour: 4, gradient: "linear-gradient(to bottom,#fef7f0 0%,#f9f0ff 35%,#ece8ff 65%,#dfeaff 100%)" },
+  { hour: 6, gradient: "linear-gradient(to bottom,#fff4e5 0%,#ffe8cf 30%,#ffdcb9 60%,#ffd1af 100%)" },
+  { hour: 8, gradient: "linear-gradient(to bottom,#fff6ea 0%,#fff0d9 35%,#fcead9 65%,#f1f7ff 100%)" },
+  { hour: 10, gradient: "linear-gradient(to bottom,#fffdf6 0%,#f6fbff 30%,#eaf3ff 65%,#dff0ff 100%)" },
+  { hour: 12, gradient: "linear-gradient(to bottom,#fdf6ed 0%,#f4fbff 35%,#def2ff 70%,#cae5ff 100%)" },
+  { hour: 14, gradient: "linear-gradient(to bottom,#fff3e3 0%,#ffe3c6 30%,#ffd6b5 60%,#ffccb0 100%)" },
+  { hour: 16, gradient: "linear-gradient(to bottom,#ffeedd 0%,#ffe0c6 35%,#ffd5bc 65%,#fcded0 100%)" },
+  { hour: 18, gradient: "linear-gradient(to bottom,#ffe8d6 0%,#ffd8c2 30%,#ffccb6 65%,#f3d7c8 100%)" },
+  { hour: 20, gradient: "linear-gradient(to bottom,#f7f1ff 0%,#ebe5ff 35%,#dfe9ff 70%,#d3efff 100%)" },
+  { hour: 22, gradient: "linear-gradient(to bottom,#f6f8ff 0%,#eef1ff 35%,#e3ecff 70%,#dae5ff 100%)" },
 ];
 
 let currentMode = "manual";
